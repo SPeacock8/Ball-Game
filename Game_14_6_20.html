@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+
+
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+<div id="bounds">
+
+  <div id="game">
+  </div>
+  <div id="sidebar">
+    <div id="level">
+      Level=1
+    </div>
+    <div id="score">
+      Your score = 0
+    </div>
+    <div id="timer">
+      Timer=0
+    </div>
+  </div>
+</div>
+
+<style>
+
+  #bounds{
+    display:flex;
+  }
+
+  #score {
+    border: 5px solid black;
+    height: 50px;
+    width: 100px;
+    top: 150px;
+    display: inline-block;
+
+  }
+    #timer {
+      border: 5px solid black;
+      height: 50px;
+      width: 100px;
+      top: 300px;
+      display: inline-block;
+
+  }
+
+  #level {
+      border: 5px solid black;
+      height: 50px;
+      width: 100px;
+      top: 150px;
+      display: inline-block;
+
+  }
+
+  #game {
+    border: 5px solid pink;
+    height: 500px;
+    width: 500px;
+    display: inline-block;
+  }
+
+  .ball {
+    height: 50px;
+    width: 50px;
+    border-radius: 25px;
+    position: absolute;
+    display: inline;
+    background-color: #622569;
+  }
+
+  #text {
+    height:50px;
+    width:100px;
+    display:inline;
+    position:absolute;
+    top:230px;
+    left:180px;
+    font-size: 50px;
+    font-weight: bold;
+
+  }
+
+  #textBackground{
+    background-color: White;
+    opacity: 0.5;
+    height:500px;
+    width:500px;
+    display: inline;
+    position:absolute;
+
+    }
+  #sidebar{
+    display: flex;
+    flex-direction: column;
+
+    }
+
+  
+    
+	
+  }
+
+</style>
+
+<script type="text/javascript">
+
+  var score = 0;
+  var balls=[];
+  var colourList = ["#5b9aa0","#d6d4e0","#b8a9c9", "#622569"];
+
+  var level = 0;
+
+  startBalls();
+  createStartElement();
+
+  function startBalls(){
+    for (var n = 0; n < 10 + level; n++){
+      createBallElement(Math.random()*400,Math.random()*400);
+    }
+    var ballElements = document.getElementsByClassName("ball");
+    for (ballElement of ballElements) {
+     var newball = { yDirection: 'down', xDirection:'right',
+      speed_x: Math.ceil(Math.random()*1) ,
+      speed_y: Math.ceil(Math.random()*1),
+      element: ballElement}
+     newball.element.style.backgroundColor = colourList[Math.floor(Math.random()*4)];
+     newball.element.addEventListener("click",function() {
+         this.remove();
+         score += 1;
+         document.getElementById("score").innerText="Your score =" + score;
+         console.log(score);
+     })
+     balls.push(newball);
+   }
+  }
+
+  function createStartElement(){
+      var start = document.createElement("div");
+      start.setAttribute("id", "text");
+      start.innerText="START";
+      var startBackground = document.createElement("div");
+      startBackground.setAttribute("id", "textBackground");
+
+      var gameOver = document.createElement("div");
+      gameOver.setAttribute("id","text");
+      gameOver.innerText="GAME OVER";
+      var gameOverBackground = document.createElement("div");
+      gameOverBackground.setAttribute("id", "textBackground");
+
+      var game = document.getElementById("game");
+
+      level += 1;
+
+      start.addEventListener("click", function() {
+        this.remove();
+        document.getElementById("textBackground").remove();
+        var time = 10;
+        
+        var interval = setInterval(function() {
+          var rounded = Math.round(time*100)/100;
+          if(rounded>0){
+            time-=0.01;
+          }
+          
+          document.getElementById("timer").innerText="Timer:" + rounded;
+          var numballs = document.getElementsByClassName("ball").length;
+          var levelCompleted = (numballs==0);
+          if (levelCompleted){
+            clearInterval(interval);
+            startBalls();
+            createStartElement();
+            document.getElementById("level").innerText="Level " + level;
+          }
+          var gameIsOver = (rounded==0);
+          if(gameIsOver){
+            game.parentNode.insertBefore(gameOver, game.nextSibling);
+            game.parentNode.insertBefore(gameOverBackground, game.nextSibling);
+            time = 0;
+		  }
+
+          for (ball of balls) {
+              changeDirection(ball);
+              moveBall(ball);
+          }
+        }, 10)
+      })
+      
+      game.parentNode.insertBefore(start, game.nextSibling);
+      game.parentNode.insertBefore(startBackground, game.nextSibling);
+}
+
+
+
+
+
+
+
+  function changeDirection( ball){//ball is type newball
+      if (parseInt(ball.element.style.top) > 446) {
+        ball.yDirection = 'up';
+      }
+      if (parseInt(ball.element.style.top) < 4) {
+        ball.yDirection = 'down';
+      }
+      if (parseInt(ball.element.style.left) > 446) {
+        ball.xDirection = 'left';
+      }
+      if (parseInt(ball.element.style.left) < 4) {
+        ball.xDirection = 'right';
+      }
+  }
+
+  function moveBall(ball) {
+      if (ball.yDirection == 'down') {
+        ball.element.style.top = parseInt(ball.element.style.top) + ball.speed_y + 'px';
+      }
+      if (ball.yDirection == 'up') {
+        ball.element.style.top = parseInt(ball.element.style.top) - ball.speed_y + 'px';
+      }
+      if (ball.xDirection == 'right') {
+        ball.element.style.left = parseInt(ball.element.style.left) + ball.speed_x + 'px';
+      }
+      if (ball.xDirection == 'left') {
+        ball.element.style.left = parseInt(ball.element.style.left) - ball.speed_x + 'px';
+      }
+  }
+
+  function createBallElement(t, l){
+      var div = document.createElement("div");
+      div.classList.add("ball");
+      div.setAttribute("style","top: " + t + "px; left: " + l + "px");
+
+      var game = document.getElementById("game");
+      game.appendChild(div);
+  }
+
+
+
+</script>
+
+</body>
+</html>
